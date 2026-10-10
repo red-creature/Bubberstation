@@ -29,13 +29,16 @@
 		"razor",
 		"bucket",
 		"mop",
+		"wet_floor_sign",
 		"pushbroom",
 		"normtrash",
 		"wirebrush",
 		"flashlight",
+		"flare",
 		"water_balloon",
 		"ticket_machine",
 		"radio_entertainment",
+		"rdd",
 		"photocopier",
 	)
 
@@ -46,12 +49,14 @@
 	prereq_ids = list(TECHWEB_NODE_OFFICE_EQUIP)
 	design_ids = list(
 		"advmop",
+		"advbroom", // BUBBER EDIT ADDITION - advanced push broom
 		"light_replacer",
 		"spraybottle",
 		"paint_remover",
 		"beartrap",
 		"buffer",
 		"vacuum",
+		"washing_machine",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 	discount_experiments = list(/datum/experiment/scanning/random/janitor_trash = TECHWEB_TIER_2_POINTS)
@@ -205,7 +210,19 @@
 	prereq_ids = list(TECHWEB_NODE_FISHING_EQUIP_ADV)
 	design_ids = list(
 		"bioelec_gen",
+		"bluespace_reel",
+		"fish_genegun",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 	// only available if you've done the first fishing experiment (thus unlocking fishing tech), but not a strict requirement to get the tech
 	discount_experiments = list(/datum/experiment/scanning/fish/second = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/fishing_anomalous
+	id = TECHWEB_NODE_FISHING_ANOMALOUS
+	display_name = "Anomalous Fishing"
+	description = "For the truly adventurous fisher, these experimental tools could augment your catches in unpredictable ways."
+	prereq_ids = list(TECHWEB_NODE_FISHING_EQUIP_ADV, TECHWEB_NODE_ANOMALY_RESEARCH)
+	design_ids = list(
+		"anomalous_fishing_hook",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)

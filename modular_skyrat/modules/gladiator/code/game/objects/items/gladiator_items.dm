@@ -34,7 +34,6 @@
 	worn_icon = 'modular_skyrat/modules/gladiator/icons/berserk_suit.dmi'
 	icon_state = "berk_cape"
 	inhand_icon_state = "" //lul
-	uses_advanced_reskins = FALSE
 	resistance_flags = INDESTRUCTIBLE
 
 /obj/item/clothing/neck/warrior_cape/loadout //Subtype for loadout item so i can make it not "indestructible"
@@ -59,29 +58,15 @@
 	resistance_flags = INDESTRUCTIBLE
 
 /datum/armor/berserker_gatsu
-	melee = 40
-	bullet = 10
+	melee = 30
+	bullet = 30
 	laser = 10
-	energy = 10
-	bomb = 70
-	bio = 70
+	energy = 20
+	bomb = 50
+	bio = 60
 	fire = 100
 	acid = 100
-	wound = -5
-
-/datum/armor/drake_empowerment //Modular Override: nerfs beserker armour so I can keep this armour balanced
-	laser = 10
-	energy = 0
-
-/datum/armor/drake_empowerment_gatsu
-	melee = 30
-	laser = 10
-	bomb = 20
-
-/obj/item/clothing/suit/hooded/berserker/gatsu/Initialize(mapload)
-	. = ..()
-	AddComponent(/datum/component/armor_plate, maxamount = 1, upgrade_item = /obj/item/drake_remains, armor_mod = /datum/armor/drake_empowerment_gatsu, upgrade_prefix = "empowered")
-	allowed = GLOB.mining_suit_allowed
+	wound = 10
 
 /obj/item/clothing/suit/hooded/berserker/gatsu/examine()
 	. = ..()
@@ -101,8 +86,6 @@
 /obj/item/clothing/head/hooded/berserker/gatsu/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, LOCKED_HELMET_TRAIT)
-	AddComponent(/datum/component/anti_magic, ALL, inventory_flags = ITEM_SLOT_OCLOTHING)
-	AddComponent(/datum/component/armor_plate, maxamount = 1, upgrade_item = /obj/item/drake_remains, armor_mod = /datum/armor/drake_empowerment_gatsu, upgrade_prefix = "empowered")
 
 /obj/item/clothing/head/hooded/berserker/gatsu/examine()
 	. = ..()
@@ -171,7 +154,7 @@
 
 /obj/item/claymore/dragonslayer/attack(mob/living/target, mob/living/carbon/human/user)
 	var/is_nemesis_faction = FALSE
-	for(var/found_faction in target.faction)
+	for(var/found_faction in target.get_faction())
 		if(found_faction in nemesis_factions)
 			is_nemesis_faction = TRUE
 			force += faction_bonus_force

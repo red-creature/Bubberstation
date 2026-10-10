@@ -3,7 +3,7 @@
 	config_tag = "Midround Lone Infiltrator"
 	preview_antag_datum = /datum/antagonist/traitor/lone_infiltrator
 	midround_type = LIGHT_MIDROUND
-	pref_flag = ROLE_LONE_INFILTRATOR
+	pref_flag = ROLE_SYNDICATE_BOARDER
 	blacklisted_roles = list(
 		JOB_CYBORG,
 		JOB_AI,
@@ -63,5 +63,5 @@
 	id_trim = /datum/id_trim/chameleon/operative
 
 /datum/outfit/syndicateinfiltrator/post_equip(mob/living/carbon/human/H)
-	H.faction |= ROLE_SYNDICATE
+	H.add_faction(ROLE_SYNDICATE)
 	H.update_icons()

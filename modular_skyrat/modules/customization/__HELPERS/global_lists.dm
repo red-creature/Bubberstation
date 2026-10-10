@@ -1,9 +1,9 @@
 /proc/make_skyrat_datum_references()
 	init_prefs_emotes()
-	make_bloopers()
 	make_default_mutant_bodypart_references()
 	make_body_marking_references()
 	make_body_marking_set_references()
+	make_robotic_style_references()
 	populate_total_ui_len_by_block()
 	populate_total_uf_len_by_block()
 	make_augment_references()
@@ -65,10 +65,14 @@
 			BM = new path()
 			GLOB.body_marking_sets[BM.name] = BM
 
+/proc/make_robotic_style_references()
+	for(var/path in valid_subtypesof(/datum/robotic_style))
+		var/datum/robotic_style/style = path
+		GLOB.robotic_styles_list[style::name] = new style()
+
 /proc/init_skyrat_stack_recipes()
 	var/list/additional_stack_recipes = list(
 		/obj/item/stack/sheet/leather = list(GLOB.skyrat_leather_recipes, GLOB.skyrat_leather_belt_recipes),
-		/obj/item/stack/sheet/mineral/titanium = list(GLOB.skyrat_titanium_recipes),
 		/obj/item/stack/sheet/mineral/snow = list(GLOB.skyrat_snow_recipes),
 		/obj/item/stack/sheet/iron = list(GLOB.skyrat_metal_recipes, GLOB.skyrat_metal_airlock_recipes),
 		/obj/item/stack/sheet/plasteel = list(GLOB.skyrat_plasteel_recipes),
@@ -78,7 +82,6 @@
 		/obj/item/stack/rods = list(GLOB.skyrat_rod_recipes),
 		/obj/item/stack/sheet/mineral/stone = list(GLOB.stone_recipes),
 		/obj/item/stack/sheet/plastic_wall_panel = list(GLOB.plastic_wall_panel_recipes),
-		/obj/item/stack/sheet/spaceshipglass = list(GLOB.spaceshipglass_recipes),
 	)
 	for(var/stack in additional_stack_recipes)
 		for(var/material_list in additional_stack_recipes[stack])
@@ -181,12 +184,3 @@
 			continue
 
 		SSaccessories.bra_m -= sprite_name
-
-// Text bloopers
-/proc/make_bloopers()
-	GLOB.blooper_list = list()
-	for(var/sound_blooper_path in subtypesof(/datum/blooper))
-		var/datum/blooper/bloop = new sound_blooper_path()
-		GLOB.blooper_list[bloop.id] = sound_blooper_path
-		if(bloop.allow_random)
-			GLOB.blooper_random_list[bloop.id] = sound_blooper_path

@@ -35,7 +35,7 @@
 	if(!check_usability(user))
 		return
 
-	. += span_notice("You can shatter the blade to teleport to a random, (mostly) safe location by <b>activating it in-hand</b>.")
+	//. += span_notice("You can shatter the blade to teleport to a random, (mostly) safe location by <b>activating it in-hand</b>.") // BUBBER EDIT REMOVOAL
 
 /// Checks if the passed mob can use this blade without being stunned
 /obj/item/melee/sickly_blade/proc/check_usability(mob/living/user)
@@ -49,6 +49,8 @@
 		to_chat(user, span_danger("You feel a pulse of alien intellect lash out at your mind!"))
 		var/mob/living/carbon/human/human_user = user
 		human_user.AdjustParalyzed(5 SECONDS)
+		return TRUE
+	if(SEND_SIGNAL(user, COMSIG_HERETIC_BLADE_PREATTACK, target, src) & COMPONENT_CANCEL_ATTACK_CHAIN)
 		return TRUE
 
 	return .
@@ -166,7 +168,7 @@
 
 /obj/item/melee/sickly_blade/dark/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()
-	if(!infused || target == user || !isliving(target))
+	if(!infused || target == user || !isliving(target) || QDELETED(target))
 		return
 	var/datum/antagonist/heretic/heretic_datum = GET_HERETIC(user)
 	var/mob/living/living_target = target
@@ -303,6 +305,11 @@
 		heretic_datum.try_draw_rune(user, target, drawing_time = 14 SECONDS) // Faster than pen, slower than cicatrix
 		return ITEM_INTERACT_BLOCKING
 	return NONE
+
+/obj/item/melee/sickly_blade/cursed/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK, damage_type = BRUTE)
+	if(attack_type == OVERWHELMING_ATTACK)
+		return FALSE
+	return ..()
 
 // Weaker blade variant given to people so they can participate in the heretic arena spell
 /obj/item/melee/sickly_blade/training

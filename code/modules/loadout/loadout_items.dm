@@ -42,6 +42,8 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 	var/group = null
 	/// Loadout flags, see LOADOUT_FLAG_* defines
 	var/loadout_flags = LOADOUT_FLAG_ALLOW_NAMING // BUBBER EDIT CHANGE - Original: var/loadout_flags = NONE
+	/// If set, this item can only be selected during the holiday specified.
+	var/required_holiday
 	/// The actual item path of the loadout item.
 	var/obj/item/item_path
 	/// Icon file (DMI) for the UI to use for preview icons.
@@ -50,8 +52,9 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 	/// Icon state for the UI to use for preview icons.
 	/// Set automatically if null
 	var/ui_icon_state
-	/// Reskin options of this item if it can be reskinned.
-	VAR_FINAL/list/cached_reskin_options
+	/// Base typepath to what reskin datum this item can use to reskin into
+	/// Doesn't verify that the item_path actually has these reskins
+	var/datum/atom_skin/reskin_datum
 	/// A list of greyscale colors that are used for items that have greyscale support, but don't allow full customization.
 	/// This is an assoc list of /datum/job_department -> colors, or /datum/job -> colors, allowing for preset colors based on player chosen job.
 	/// Jobs are prioritized over departments.
@@ -67,6 +70,8 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 	var/list/blacklisted_roles
 	/// If set, is a list of species which can get the loadout item
 	var/list/restricted_species
+	/// If set, is a list of species which can't get the loadout item
+	var/list/blacklisted_species
 	/// Whether the item is restricted to supporters
 	var/donator_only
 	/// Whether the item requires a specific season in order to be available
@@ -97,15 +102,6 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 	if(isnull(ui_icon) && isnull(ui_icon_state))
 		ui_icon = item_path::icon_preview || item_path::icon
 		ui_icon_state = item_path::icon_state_preview || item_path::icon_state
-
-	if(loadout_flags & LOADOUT_FLAG_ALLOW_RESKIN)
-		var/obj/item/dummy_item = new item_path()
-		if(!length(dummy_item.unique_reskin))
-			loadout_flags &= ~LOADOUT_FLAG_ALLOW_RESKIN
-			stack_trace("Loadout item [item_path] has LOADOUT_FLAG_ALLOW_RESKIN but has no unique reskins.")
-		else
-			cached_reskin_options = dummy_item.unique_reskin.Copy()
-		qdel(dummy_item)
 
 	// SKYRAT EDIT ADDITION
 	// Let's sanitize in case somebody inserted the player's byond name instead of ckey in canonical form
@@ -156,9 +152,48 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 		// BUBBER EDIT ADDITION END
 
 		if("set_skin")
-			if(loadout_flags & LOADOUT_FLAG_ALLOW_RESKIN)
+			if(reskin_datum)
 				return set_skin(manager, user, params)
 
+		if("select_color_simple")
+			return item_color_painting(manager, user)
+
+		if("set_color_mode")
+			return item_color_mode(manager, user)
+
+	return TRUE
+
+/datum/loadout_item/proc/item_color_painting(datum/preference_middleware/loadout/manager, mob/user)
+	if(manager.menu)
+		return FALSE
+
+	var/list/loadout = manager.get_current_loadout()
+	if(!loadout?[item_path])
+		return FALSE
+
+	var/chosen_color = tgui_color_picker(user, "Pick new color. Setting color to pitch black will remove the existing color.", "Repaint item", "#000000")
+	if(isnull(chosen_color))
+		return FALSE
+
+	var/hsl = rgb2num(chosen_color, COLORSPACE_HSL)
+	if(hsl[3] == 0)
+		loadout[item_path][INFO_CUSTOM_COLOR] = null
+	else
+		loadout[item_path][INFO_CUSTOM_COLOR] = chosen_color
+
+	manager.save_current_loadout(loadout)
+	return TRUE
+
+/datum/loadout_item/proc/item_color_mode(datum/preference_middleware/loadout/manager, mob/user)
+	var/list/loadout = manager.get_current_loadout()
+	if(!loadout?[item_path])
+		return FALSE
+
+	if(isnull(loadout[item_path][INFO_COLOR_MODE]))
+		loadout[item_path][INFO_COLOR_MODE] = FALSE
+
+	loadout[item_path][INFO_COLOR_MODE] = !loadout[item_path][INFO_COLOR_MODE]
+	manager.save_current_loadout(loadout)
 	return TRUE
 
 /// Opens up the GAGS editing menu.
@@ -239,9 +274,7 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 
 /// Used for reskinning an item to an alt skin.
 /datum/loadout_item/proc/set_skin(datum/preference_middleware/loadout/manager, mob/user, params)
-	var/reskin_to = params["skin"]
-	if(!cached_reskin_options[reskin_to])
-		return FALSE
+	var/reskin_to = params["skin"] // sanity checking isn't necessary because it's all checked when equipped anyways
 
 	var/list/loadout = manager.get_current_loadout() // BUBBER EDIT: Multiple loadout presets: ORIGINAL: var/list/loadout = manager.preferences.read_preference(/datum/preference/loadout)
 	if(!loadout?[item_path])
@@ -313,6 +346,9 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 		equipped_item.set_greyscale(item_color)
 		update_flag |= equipped_item.slot_flags
 
+	if(item_details?[INFO_CUSTOM_COLOR] && !istype(equipper, /mob/living/carbon/human/dummy)) //the dummy check makes it not color the item in the loadout because that causes runtimes, joining into the game colors the item as intended. If you want to fix it, start here
+		equipped_item.add_atom_colour(color_transition_filter(item_details[INFO_CUSTOM_COLOR], item_details[INFO_COLOR_MODE] ? SATURATION_OVERRIDE : SATURATION_MULTIPLY), FIXED_COLOUR_PRIORITY)
+
 	// BUBBER EDIT CHANGE BEGIN - Descriptions
 	if((loadout_flags & LOADOUT_FLAG_ALLOW_NAMING) && !visuals_only)
 		var/renamed = FALSE
@@ -328,27 +364,95 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 			SEND_SIGNAL(equipped_item, COMSIG_NAME_CHANGED)
 	// BUBBER EDIT CHANGE END - Descriptions
 
-	if((loadout_flags & LOADOUT_FLAG_ALLOW_RESKIN) && item_details?[INFO_RESKIN])
+	if(reskin_datum && item_details?[INFO_RESKIN])
 		var/skin_chosen = item_details[INFO_RESKIN]
-		if(skin_chosen in equipped_item.unique_reskin)
-			equipped_item.current_skin = skin_chosen
-			equipped_item.icon_state = equipped_item.unique_reskin[skin_chosen]
+		// BUBBER EDIT CHANGE START - Prefer the component when the item has one
+		// Applying a skin directly leaves the component untouched: current_skin stays null and
+		// COMSIG_OBJ_RESKIN never fires, so items that track their own colour var never learn about
+		// the change and revert the moment something calls update_icon_state(). Going through the
+		// component takes the same path an in game alt click would.
+		// The item can carry more than one of these. The pride pin does: it has the base game's set of
+		// flags plus a second set added downstream. Match on the skin type we actually want, or we
+		// might hand the chosen name to the wrong set and get nothing.
+		var/datum/component/reskinable_item/reskin_comp
+		for(var/datum/component/reskinable_item/candidate as anything in equipped_item.GetComponents(/datum/component/reskinable_item))
+			if(candidate.get_base_reskin_type() == reskin_datum)
+				reskin_comp = candidate
+				break
+		if(reskin_comp)
+			reskin_comp.set_skin_by_name(skin_chosen)
+			// Mirror reskin_obj(): a component that only allows one skin is spent once that skin is
+			// picked, so drop it. Leaving it alive would swallow every later alt click on the item.
+			if(!reskin_comp.get_infinite_reskin())
+				qdel(reskin_comp)
 			if(istype(equipped_item, /obj/item/clothing/accessory))
 				// Snowflake handing for accessories, because we need to update the thing it's attached to instead
 				if(isclothing(equipped_item.loc))
-					var/obj/item/clothing/under/attached_to = equipped_item.loc
-					attached_to.update_accessory_overlay()
-					update_flag |= (ITEM_SLOT_OCLOTHING|ITEM_SLOT_ICLOTHING)
+					var/obj/item/clothing/attached_to = equipped_item.loc
+					update_flag |= attached_to.slot_flags
 			else
 				update_flag |= equipped_item.slot_flags
+		else
+			var/list/atom_skins = get_atom_skins()
+			for(var/datum/atom_skin/skin_path as anything in valid_subtypesof(reskin_datum))
+				if(skin_path::preview_name != skin_chosen)
+					continue
+				var/datum/atom_skin/skin_instance = atom_skins[skin_path]
+				skin_instance.apply(equipped_item)
+				if(istype(equipped_item, /obj/item/clothing/accessory))
+					// Snowflake handing for accessories, because we need to update the thing it's attached to instead
+					if(isclothing(equipped_item.loc))
+						var/obj/item/clothing/attached_to = equipped_item.loc
+						update_flag |= attached_to.slot_flags
+				else
+					update_flag |= equipped_item.slot_flags
+				break
+		// BUBBER EDIT CHANGE END
 
 	return update_flag
+
+// BUBBER EDIT ADDITION START - Automatic reskin detection
+/**
+ * Checks item_path for a reskinable_item component and adopts its skin type, so that any item
+ * which supports alt click reskinning in game also offers skin selection in the loadout.
+ *
+ * This is called from to_ui_data() rather than New(), because it depends on the probe item below
+ * running its own Initialize(). Loadout datums are built by GLOBAL_LIST_INIT, which fires before
+ * SSatoms, and while SSatoms.initialized is INITIALIZATION_INSSATOMS every atom/New() skips
+ * InitAtom entirely. A probe built that early would never run setup_reskins(), so its component
+ * would not exist yet to be found. By the time the preferences data is assembled SSatoms is done.
+ *
+ * Datums that declare reskin_datum themselves are left alone, as are those flagged
+ * LOADOUT_FLAG_BLOCK_RESKIN.
+ */
+/datum/loadout_item/proc/try_detect_reskin()
+	if(reskin_datum || (loadout_flags & LOADOUT_FLAG_BLOCK_RESKIN))
+		return
+	if(!ispath(item_path, /obj/item))
+		return
+	if(ispath(item_path, /obj/item/mob_holder))
+		return
+	var/obj/item/probe = new item_path(null)
+	// Some items delete themselves during Initialize (a lewd NIFSoft datadisk does exactly this when
+	// the lewd content config is off), and new() still hands back the reference. Touching it would
+	// runtime, and qdel'ing it a second time would throw.
+	if(QDELETED(probe))
+		return
+	// An item is allowed more than one of these, so ask for the list. If there is more than one we
+	// take the first, since the loadout menu only has room for a single set of styles.
+	var/list/found = probe.GetComponents(/datum/component/reskinable_item)
+	if(length(found))
+		var/datum/component/reskinable_item/reskin_comp = found[1]
+		reskin_datum = reskin_comp.get_base_reskin_type()
+	qdel(probe)
+// BUBBER EDIT ADDITION END
 
 /**
  * Returns a formatted list of data for this loadout item.
  */
 /datum/loadout_item/proc/to_ui_data() as /list
 	SHOULD_CALL_PARENT(TRUE)
+	try_detect_reskin() // BUBBER EDIT ADDITION - Populate reskin_datum before the UI data is built
 
 	var/list/formatted_item = list()
 	var/list/information = list()
@@ -367,9 +471,25 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 	formatted_item["reskins"] = get_reskin_options()
 	formatted_item["icon"] = ui_icon
 	formatted_item["icon_state"] = ui_icon_state
-	formatted_item["ckey_whitelist"] = ckeywhitelist // BUBBER EDIT ADDITION: Filter ckey-locked items
+	//BUBBER EDIT ADDITION START - Dynamic Uniforms + ckey lock filter
+	if(initial(item_path.greyscale_component_style_type))
+		add_component_style_preview_to_ui_data(formatted_item)
+	formatted_item["ckey_whitelist"] = ckeywhitelist
+	//BUBBER EDIT ADDITION END
 
 	return formatted_item
+
+/**
+ * Checks if this item is disabled and cannot be selected or granted
+ */
+/datum/loadout_item/proc/is_disabled()
+	return required_holiday && !check_holidays(required_holiday)
+
+/**
+ * Checks if this item is disabled or unequippable for the given item details.
+ */
+/datum/loadout_item/proc/is_equippable(mob/living/carbon/human/equipper, list/item_details)
+	return !is_disabled()
 
 /**
  * Returns a list of information to display about this item in the loadout UI.
@@ -383,8 +503,11 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 	if((loadout_flags & LOADOUT_FLAG_GREYSCALING_ALLOWED) && !(loadout_flags & LOADOUT_FLAG_JOB_GREYSCALING))
 		displayed_text[FA_ICON_PALETTE] = "Recolorable"
 
-	if(loadout_flags & LOADOUT_FLAG_ALLOW_RESKIN)
+	if(reskin_datum)
 		displayed_text[FA_ICON_SWATCHBOOK] = "Reskinnable"
+
+	if(required_holiday)
+		displayed_text[FA_ICON_CALENDAR_CHECK] = "Only available: [required_holiday]"
 
 	// SKYRAT EDIT ADDITION
 	if(donator_only)
@@ -431,6 +554,20 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
 			"button_icon" = FA_ICON_PALETTE,
 			"active_key" = INFO_GREYSCALE,
 		))
+	else
+		UNTYPED_LIST_ADD(button_list, list(
+			"label" = "Repaint",
+			"act_key" = "select_color_simple",
+			"button_icon" = FA_ICON_PALETTE,
+			"active_key" = INFO_CUSTOM_COLOR,
+		))
+		UNTYPED_LIST_ADD(button_list, list(
+			"label" = "Repainting mode",
+			"act_key" = "set_color_mode",
+			"active_key" = INFO_COLOR_MODE,
+			"active_text" = "Override Color",
+			"inactive_text" = "Multiply Color",
+		))
 
 	if(loadout_flags & LOADOUT_FLAG_ALLOW_NAMING)
 		UNTYPED_LIST_ADD(button_list, list(
@@ -453,16 +590,24 @@ GLOBAL_LIST_INIT(all_loadout_categories, init_loadout_categories())
  * Returns a list of options this item can be reskinned into.
  */
 /datum/loadout_item/proc/get_reskin_options() as /list
-	if(!(loadout_flags & LOADOUT_FLAG_ALLOW_RESKIN))
+	if(!reskin_datum)
 		return null
 
 	var/list/reskins = list()
+	var/list/atom_skins = get_atom_skins()
+	var/list/reskin_choices
+	if(reskin_datum::allow_all_subtypes_in_loadout)
+		reskin_choices = valid_subtypesof(reskin_datum)
+	else
+		reskin_choices = valid_direct_subtypesof(reskin_datum)
 
-	for(var/skin in cached_reskin_options)
+	for(var/datum/atom_skin/skin_path as anything in reskin_choices)
+		var/datum/atom_skin/atom_skin = atom_skins[skin_path]
 		UNTYPED_LIST_ADD(reskins, list(
-			"name" = skin,
-			"tooltip" = skin,
-			"skin_icon_state" = cached_reskin_options[skin],
+			"name" = skin_path::new_name || skin_path::preview_name,
+			"tooltip" = skin_path::preview_name,
+			"skin_icon" = skin_path::new_icon,
+			"skin_icon_state" = atom_skin?.get_preview_icon_state() || skin_path::new_icon
 		))
 
 	return reskins

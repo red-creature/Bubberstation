@@ -156,3 +156,13 @@
 	name = "Skinny Mandibles"
 	icon = 'modular_zubbers/icons/customization/ears.dmi'
 	icon_state = "skinny" // End of by @Sweettoothart
+
+/datum/sprite_accessory/ears/easternd
+	name = "Eastern Dragon"
+	icon_state = "easternd"
+	icon = 'modular_zubbers/icons/customization/ears.dmi'
+
+/datum/sprite_accessory/ears/expie
+	name = "Expie Spike"
+	icon_state = "expie"
+	icon = 'modular_zubbers/icons/customization/ears.dmi'

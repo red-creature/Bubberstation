@@ -9,7 +9,12 @@
 /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat
 	//Effectively the same as TG's blueshirt, including icon. The /skyrat path makes it easier for sorting.
 	name = "science guard's uniform"
-	unique_reskin = null
+
+/obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/Initialize(mapload)
+	. = ..()
+	var/list/reskin_components = GetComponents(/datum/component/reskinable_item)
+	for(var/datum/component/reskinable_item/reskin_component as anything in reskin_components)
+		qdel(reskin_component)
 
 /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/orderly
 	name = "orderly uniform"
@@ -54,8 +59,13 @@
 	//Effectively the same as TG's blueshirt, including icon. The /skyrat path makes it easier for sorting.
 	icon = 'modular_skyrat/master_files/icons/obj/clothing/suits/armor.dmi'
 	worn_icon = 'modular_skyrat/master_files/icons/mob/clothing/suits/armor.dmi'
-	unique_reskin = null
 	supports_variations_flags = CLOTHING_DIGITIGRADE_VARIATION_NO_NEW_ICON
+
+/obj/item/clothing/suit/armor/vest/blueshirt/skyrat/Initialize(mapload)
+	. = ..()
+	var/list/reskin_components = GetComponents(/datum/component/reskinable_item)
+	for(var/datum/component/reskinable_item/reskin_component as anything in reskin_components)
+		qdel(reskin_component)
 
 /obj/item/clothing/suit/armor/vest/blueshirt/skyrat/guard //Badge-less version of the blueshirt vest
 	icon_state = "guard_armor"
@@ -87,7 +97,12 @@
 /obj/item/clothing/head/helmet/blueshirt/skyrat
 	//Effectively the same as TG's blueshirt, including icon. The /skyrat path makes it easier for sorting.
 	//The base one is used for science guards, and the sprite is unchanged
-	unique_reskin = null
+
+/obj/item/clothing/head/helmet/blueshirt/skyrat/Initialize(mapload)
+	. = ..()
+	var/list/reskin_components = GetComponents(/datum/component/reskinable_item)
+	for(var/datum/component/reskinable_item/reskin_component as anything in reskin_components)
+		qdel(reskin_component)
 
 /obj/item/clothing/head/helmet/blueshirt/skyrat/guard //Version of the blueshirt helmet without a blue line. Used by all dept guards right now.
 	icon = 'modular_skyrat/master_files/icons/obj/clothing/head/helmet.dmi'
@@ -161,7 +176,6 @@
 	title = JOB_SCIENCE_GUARD
 	rpg_title = "Secrets Keeper"
 	description = "Figure out why the emails aren't working, keep an eye on the eggheads, protect them from their latest mistakes."
-	department_head = list(JOB_RESEARCH_DIRECTOR)
 	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
@@ -191,15 +205,22 @@
 	/obj/item/melee/baton = 5
 	)
 
-	job_flags = JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	job_flags = JOB_ANTAG_PROTECTED | JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	akula_outfit = /datum/outfit/akula/security_officer
+	banned_quirks = list(GUARD_RESTRICTED_QUIRKS)
+	alt_titles = list(
+		"Science Guard",
+		"Research Guard",
+	)
 
 /datum/outfit/job/science_guard
 	name = "Science Guard"
 	jobtype = /datum/job/science_guard
 
 	belt = /obj/item/modular_computer/pda/science
-	ears = /obj/item/radio/headset/headset_sci
+	ears = /obj/item/radio/headset/guard_bowman/science
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/guard/science
 	shoes = /obj/item/clothing/shoes/jackboots
 	head =  /obj/item/clothing/head/beret/sec/science
 	suit = /obj/item/clothing/suit/armor/vest/alt
@@ -207,7 +228,7 @@
 	l_pocket = /obj/item/restraints/handcuffs
 	backpack_contents = list(
 		/obj/item/melee/baton/security/loaded/departmental/science = 1,
-		/obj/item/gun/energy/e_gun/advtaser = 1,
+		/obj/item/security_voucher/primary = 1,
 		/obj/item/holosign_creator/security = 1
 	)
 
@@ -267,7 +288,6 @@
 	title = JOB_ORDERLY
 	rpg_title = "Praetorian"
 	description = "Defend the medical department, hold down idiots who refuse the vaccine, assist medical with prep and/or cleanup."
-	department_head = list(JOB_CHIEF_MEDICAL_OFFICER)
 	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
@@ -297,24 +317,32 @@
 		/obj/item/melee/baton = 5
 	)
 
-	job_flags = JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	job_flags = JOB_ANTAG_PROTECTED | JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	akula_outfit = /datum/outfit/akula/security_officer
+	banned_quirks = list(GUARD_RESTRICTED_QUIRKS)
+	alt_titles = list(
+		"Orderly",
+		"Medical Guard",
+		"Medical Attendant",
+		"Medical Support Technician",
+	) //other dept guards' alt-titles should be kept to [department] guard to avoid confusion, unless the department gets a re-do.	// I came across this comment while I was cleaning up job datums. IDFK what it is refering to because apparently having like 5 separate overrides for each job datum (and sometimes even fucking `New` procs just to add alt-titles) wasn't confusing enough I guess, but I'll leave it just in case
 
 /datum/outfit/job/orderly
 	name = "Orderly"
 	jobtype = /datum/job/orderly
 
 	belt = /obj/item/modular_computer/pda/medical
-	ears = /obj/item/radio/headset/headset_med
+	ears = /obj/item/radio/headset/guard_bowman/medical
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/orderly
 	shoes = /obj/item/clothing/shoes/sneakers/white
 	head = /obj/item/clothing/head/beret/sec/medical
-	glasses = /obj/item/clothing/glasses/hud/medsechud/sunglasses
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/guard/medical
 	suit = /obj/item/clothing/suit/armor/vest/blueshirt/skyrat/orderly
 	r_pocket = /obj/item/reagent_containers/spray/pepper
 	l_pocket = /obj/item/restraints/handcuffs
 	backpack_contents = list(
 		/obj/item/melee/baton/security/loaded/departmental/medical = 1,
-		/obj/item/gun/energy/e_gun/advtaser = 1,
+		/obj/item/security_voucher/primary = 1,
 		/obj/item/holosign_creator/security = 1
 	)
 
@@ -375,7 +403,6 @@
 	title = JOB_ENGINEERING_GUARD
 	rpg_title = "Crystal Guardian"
 	description = "Monitor the supermatter, keep an eye on atmospherics, make sure everyone is wearing Proper Protective Equipment."
-	department_head = list(JOB_CHIEF_ENGINEER)
 	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
@@ -405,23 +432,30 @@
 		/obj/item/melee/baton = 5
 	)
 
-	job_flags = JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	job_flags = JOB_ANTAG_PROTECTED | JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	akula_outfit = /datum/outfit/akula/security_officer
+	alt_titles = list(
+		"Engineering Guard",
+		"Atmospheric Security",
+	)
+	banned_quirks = list(GUARD_RESTRICTED_QUIRKS)
 
 /datum/outfit/job/engineering_guard
 	name = "Engineering Guard"
 	jobtype = /datum/job/engineering_guard
 
 	belt = /obj/item/modular_computer/pda/engineering
-	ears = /obj/item/radio/headset/headset_eng
+	ears = /obj/item/radio/headset/guard_bowman/engineering
 	shoes = /obj/item/clothing/shoes/workboots
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/engineering_guard
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/guard/engineering
 	head =  /obj/item/clothing/head/beret/sec/engineering
 	suit = /obj/item/clothing/suit/armor/vest/blueshirt/skyrat/engineering_guard
 	r_pocket = /obj/item/reagent_containers/spray/pepper
 	l_pocket = /obj/item/restraints/handcuffs
 	backpack_contents = list(
 		/obj/item/melee/baton/security/loaded/departmental/engineering = 1,
-		/obj/item/gun/energy/e_gun/advtaser = 1,
+		/obj/item/security_voucher/primary = 1,
 		/obj/item/holosign_creator/security = 1
 	)
 
@@ -482,7 +516,6 @@
 	title = JOB_CUSTOMS_AGENT
 	rpg_title = "Vault Keeper"
 	description = "Inspect the packages coming to and from the station, protect the cargo department, beat the shit out of people trying to ship Cocaine to the Spinward Stellar Coalition."
-	department_head = list(JOB_QUARTERMASTER)
 	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
@@ -512,24 +545,30 @@
 		/obj/item/melee/baton = 5
 	)
 
-	job_flags = JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	job_flags = JOB_ANTAG_PROTECTED | JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	banned_quirks = list(GUARD_RESTRICTED_QUIRKS)
+	akula_outfit = /datum/outfit/akula/security_officer
+	alt_titles = list(
+		"Customs Agent",
+		"Supply Guard",
+	)
 
 /datum/outfit/job/customs_agent
 	name = "Customs Agent"
 	jobtype = /datum/job/customs_agent
 
 	belt = /obj/item/modular_computer/pda/cargo
-	ears = /obj/item/radio/headset/headset_cargo
+	ears = /obj/item/radio/headset/guard_bowman/cargo
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/customs_agent
 	head = /obj/item/clothing/head/beret/sec/cargo
 	suit = /obj/item/clothing/suit/armor/vest/blueshirt/skyrat/customs_agent
-	glasses = /obj/item/clothing/glasses/hud/gun_permit
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/guard/customs
 	r_pocket = /obj/item/reagent_containers/spray/pepper
 	l_pocket = /obj/item/restraints/handcuffs
 	backpack_contents = list(
 		/obj/item/melee/baton/security/loaded/departmental/cargo = 1,
-		/obj/item/gun/energy/e_gun/advtaser = 1,
+		/obj/item/security_voucher/primary = 1,
 		/obj/item/holosign_creator/security = 1
 	)
 
@@ -561,6 +600,7 @@
 		ACCESS_WEAPONS,
 	)
 	minimal_access = list(
+		ACCESS_BLACKSMITH,
 		ACCESS_BRIG_ENTRANCE,
 		ACCESS_CARGO,
 		ACCESS_MAINT_TUNNELS,
@@ -583,7 +623,6 @@
 	title = JOB_BOUNCER
 	rpg_title = "Tavern Watch"
 	description = "Make sure people don't jump the kitchen counter, stop Chapel vandalism, check bargoer's IDs, prevent the dreaded \"food fight\"."
-	department_head = list(JOB_HEAD_OF_PERSONNEL)
 	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
@@ -613,14 +652,22 @@
 		/obj/item/melee/baton = 5
 	)
 
-	job_flags = JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	job_flags = JOB_ANTAG_PROTECTED | JOB_ANNOUNCE_ARRIVAL | JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_CREW_MEMBER | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS | JOB_CAN_BE_INTERN
+	banned_quirks = list(GUARD_RESTRICTED_QUIRKS)
+	akula_outfit = /datum/outfit/akula/security_officer
+	alt_titles = list(
+		"Bouncer",
+		"Service Guard",
+		"Doorman",
+		"Doorwoman",
+	)
 
 /datum/outfit/job/bouncer
 	name = "Bouncer"
 	jobtype = /datum/job/bouncer
 
 	belt = /obj/item/modular_computer/pda/bar
-	ears = /obj/item/radio/headset/headset_srv
+	ears = /obj/item/radio/headset/guard_bowman/service
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/bouncer
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	head =  /obj/item/clothing/head/beret/sec/service
@@ -629,10 +676,10 @@
 	r_pocket = /obj/item/reagent_containers/spray/pepper
 	backpack_contents = list(
 		/obj/item/melee/baton/security/loaded/departmental/service = 1,
-		/obj/item/gun/energy/e_gun/advtaser = 1,
+		/obj/item/security_voucher/primary = 1,
 		/obj/item/holosign_creator/security = 1
 	)
-	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/guard/service
 
 	backpack = /obj/item/storage/backpack
 	satchel = /obj/item/storage/backpack/satchel
@@ -680,15 +727,120 @@
 /*
 	Departmental Batons
 */
+/// One greyscale sheet, two art styles, three colour zones: department handle, conductive tip, and the halo it throws when live.
+/datum/greyscale_config/guard_baton
+	name = "Guard Baton"
+	icon_file = 'modular_zubbers/icons/obj/weapons/guard_baton.dmi'
+	json_config = 'code/datums/greyscale/json_configs/guard_baton.json'
+
+/datum/greyscale_config/guard_baton_inhand_left
+	name = "Guard Baton (Left Hand)"
+	icon_file = 'modular_zubbers/icons/mob/inhands/guard_baton_lefthand.dmi'
+	json_config = 'code/datums/greyscale/json_configs/guard_baton_inhand.json'
+
+/datum/greyscale_config/guard_baton_inhand_right
+	name = "Guard Baton (Right Hand)"
+	icon_file = 'modular_zubbers/icons/mob/inhands/guard_baton_righthand.dmi'
+	json_config = 'code/datums/greyscale/json_configs/guard_baton_inhand.json'
+
+/datum/greyscale_config/guard_baton_worn
+	name = "Guard Baton (Worn)"
+	icon_file = 'modular_zubbers/icons/mob/clothing/guard_baton_worn.dmi'
+	json_config = 'code/datums/greyscale/json_configs/guard_baton_worn.json'
+
+/datum/greyscale_config/guard_baton_belt
+	name = "Guard Baton (Belt)"
+	icon_file = 'modular_zubbers/icons/obj/clothing/guard_baton_belt.dmi'
+	json_config = 'code/datums/greyscale/json_configs/guard_baton_belt.json'
+
+/datum/atom_skin/guard_baton
+	abstract_type = /datum/atom_skin/guard_baton
+	change_base_icon_state = TRUE
+	change_worn_icon_state = FALSE
+
+/datum/atom_skin/guard_baton/modern
+	preview_name = "Modern"
+	new_icon_state = "modernbaton"
+
+/datum/atom_skin/guard_baton/coder_art
+	preview_name = "Coder Art"
+	new_icon_state = "guardbaton"
+
 /obj/item/melee/baton/security/loaded/departmental
-	name = "departmental stun baton"
-	desc = "A stun baton fitted with a departmental area-lock, based off the station's blueprint layout - outside of its department, it only has three uses."
-	icon = 'modular_skyrat/modules/goofsec/icons/departmental_batons.dmi'
-	icon_state = "prison_baton" // We're abstract anyhow
-	base_inhand_state = "stunbaton"
-	var/list/valid_areas = list()
+	// The unkeyed baton is stolen goods, re-keyed to maintenance by someone who should not have it
+	name = "defaced stun baton"
+	desc = "A departmental baton with its identifying markings scratched out and every trace of department color worn away. A stencil along the handle still reads IF FOUND PLEASE RETURN TO ███. You get the feeling somebody 'customized' the area-lock on this one. Who would want a baton that only works in maintenance?"
+	icon = 'modular_zubbers/icons/map_icons/guard_baton.dmi' // map icon only, GAGS swaps in the real bundle at init
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental"
+	post_init_icon_state = "modernbaton"
+	base_icon_state = "modernbaton"
+	greyscale_config = /datum/greyscale_config/guard_baton
+	// The baton carries its colours into the hand too
+	greyscale_config_inhand_left = /datum/greyscale_config/guard_baton_inhand_left
+	greyscale_config_inhand_right = /datum/greyscale_config/guard_baton_inhand_right
+	lefthand_file = 'modular_zubbers/icons/mob/inhands/guard_baton_lefthand.dmi'
+	righthand_file = 'modular_zubbers/icons/mob/inhands/guard_baton_righthand.dmi'
+	greyscale_config_worn = /datum/greyscale_config/guard_baton_worn
+	worn_icon = 'modular_zubbers/icons/mob/clothing/guard_baton_worn.dmi'
+	worn_icon_state = "guardbaton_worn"
+	greyscale_config_belt = /datum/greyscale_config/guard_baton_belt
+	inside_belt_icon_state = "guardbaton_belt"
+	inhand_icon_state = "guardbaton_inhand"
+	/// Department handle, conductive tip, electric halo. Subtypes override the first colour
+	greyscale_colors = "#999999#C7CBD6#78C8FF"
+	base_inhand_state = "guardbaton_inhand"
+	var/list/valid_areas = list(/area/station/maintenance, /area/shuttle/escape)
 	var/emagged = FALSE
 	var/non_departmental_uses_left = 4
+
+// Alt-click swaps between the modern sprite and Goofball's original
+/obj/item/melee/baton/security/loaded/departmental/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/reskinable_item, /datum/atom_skin/guard_baton)
+	AddElement(/datum/element/gags_recolorable)
+
+/**
+ * The worn bar and the belt overlay are too small to carry the department stripe, so they only tint
+ * the conductive head. A greyscale config has to number its colours from one, which means those two
+ * sheets use id 1 and we hand them the conductor colour rather than the whole string.
+ */
+/obj/item/melee/baton/security/loaded/departmental/proc/get_conductor_color()
+	if(!greyscale_colors)
+		return null
+	var/list/colors = SSgreyscale.ParseColorString(greyscale_colors)
+	return length(colors) >= 2 ? colors[2] : null
+
+/obj/item/melee/baton/security/loaded/departmental/update_greyscale()
+	. = ..()
+	var/conductor = get_conductor_color()
+	if(conductor && greyscale_config_worn)
+		worn_icon = SSgreyscale.GetColoredIconByType(greyscale_config_worn, conductor)
+
+/obj/item/melee/baton/security/loaded/departmental/get_belt_overlay()
+	var/conductor = get_conductor_color()
+	if(!greyscale_config_belt || !conductor)
+		return ..()
+	return mutable_appearance(SSgreyscale.GetColoredIconByType(greyscale_config_belt, conductor), inside_belt_icon_state)
+
+/**
+ * GAGS hands an item exactly one worn sheet, but the belt slot and the suit storage slot
+ * want the baton facing opposite ways - vanilla solves this with twin belt.dmi / belt_mirror.dmi
+ * sheets. We keep both orientations in our one sheet and pick the mirrored state when the
+ * caller asks for the suit storage file.
+ */
+/obj/item/melee/baton/security/loaded/departmental/build_worn_icon(
+	default_layer = 0,
+	default_icon_file = null,
+	isinhands = FALSE,
+	female_uniform = NO_FEMALE_UNIFORM,
+	override_state = null,
+	override_file = null,
+	bodyshape = NONE,
+	mutant_styles = NONE,
+)
+	if(!isinhands && isnull(override_state) && default_icon_file == 'icons/mob/clothing/belt_mirror.dmi')
+		override_state = "[worn_icon_state]_mirror"
+	return ..()
 
 /obj/item/melee/baton/security/loaded/departmental/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	. = ..()
@@ -741,37 +893,43 @@
 /obj/item/melee/baton/security/loaded/departmental/medical
 	name = "medical stun baton"
 	desc = "A stun baton that doesn't operate outside of the Medical department, based off the station's blueprint layout. Can be used outside of Medical up to three times before needing to return!"
-	base_icon_state = "medical_baton"
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental/medical" // map icon preview
+	greyscale_colors = "#5B97BC#C7CBD6#78C8FF"
 	valid_areas = list(/area/station/medical, /area/station/maintenance/department/medical, /area/shuttle/escape)
 
 /obj/item/melee/baton/security/loaded/departmental/engineering
 	name = "engineering stun baton"
 	desc = "A stun baton that doesn't operate outside of the Engineering department, based off the station's blueprint layout. Can be used outside of Engineering up to three times before needing to return!"
-	base_icon_state = "engineering_baton"
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental/engineering" // map icon preview
+	greyscale_colors = "#FFA62B#C7CBD6#78C8FF"
 	valid_areas = list(/area/station/engineering, /area/station/maintenance/department/engine, /area/shuttle/escape)
 
 /obj/item/melee/baton/security/loaded/departmental/science
 	name = "science stun baton"
 	desc = "A stun baton that doesn't operate outside of the Science department, based off the station's blueprint layout. Can be used outside of Science up to three times before needing to return!"
-	base_icon_state = "science_baton"
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental/science" // map icon preview
+	greyscale_colors = "#C96DBF#C7CBD6#78C8FF"
 	valid_areas = list(/area/station/science, /area/station/maintenance/department/science, /area/shuttle/escape)
 
 /obj/item/melee/baton/security/loaded/departmental/cargo
 	name = "cargo stun baton"
 	desc = "A stun baton that doesn't operate outside of the Cargo department, based off the station's blueprint layout. Can be used outside of Cargo up to three times before needing to return!"
-	base_icon_state = "cargo_baton"
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental/cargo" // map icon preview
+	greyscale_colors = "#B18644#C7CBD6#78C8FF"
 	valid_areas = list(/area/station/cargo, /area/station/maintenance/department/cargo, /area/shuttle/escape)
 
 /obj/item/melee/baton/security/loaded/departmental/service
 	name = "service stun baton"
 	desc = "A stun baton that doesn't operate outside of the Service department, based off the station's blueprint layout. Can be used outside of Service up to three times before needing to return!"
-	base_icon_state = "service_baton"
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental/service" // map icon preview
+	greyscale_colors = "#58C800#C7CBD6#78C8FF"
 	valid_areas = list(/area/station/service, /area/station/hallway/secondary/service, /area/station/maintenance/department/chapel, /area/station/maintenance/department/crew_quarters, /area/shuttle/escape)
 
 /obj/item/melee/baton/security/loaded/departmental/prison
 	name = "prison stun baton"
 	desc = "A stun baton that doesn't operate outside of the Prison, based off the station's blueprint layout. Can be used outside of the Prison up to three times before needing to return!"
-	base_icon_state = "prison_baton"
+	icon_state = "/obj/item/melee/baton/security/loaded/departmental/prison" // map icon preview
+	greyscale_colors = "#A54900#C7CBD6#78C8FF"
 	valid_areas = list(/area/station/security/prison, /area/station/security/processing, /area/shuttle/escape)
 
 /datum/supply_pack/security/baton_prison
@@ -832,13 +990,15 @@
 
 /obj/item/storage/bag/garment/science_guard/PopulateContents()
 	generate_items_inside(list(
-		/obj/item/radio/headset/headset_sci = 2,
+		/obj/item/radio/headset/guard_bowman/science = 2,
 		/obj/item/clothing/shoes/sneakers/black = 2,
 		/obj/item/clothing/under/rank/security/officer/blueshirt/skyrat = 2,
 		/obj/item/clothing/head/helmet/blueshirt/skyrat = 2,
 		/obj/item/clothing/head/beret/sec/science = 2,
 		/obj/item/clothing/suit/armor/vest/blueshirt/skyrat = 2,
-		/obj/item/clothing/glasses/hud/security = 2,
+		/obj/item/clothing/suit/toggle/labcoat/technical/science/guard = 1,
+		/obj/item/clothing/glasses/hud/security = 1,
+		/obj/item/clothing/glasses/hud/security/sunglasses/guard/science = 1,
 	), src)
 
 /obj/item/storage/bag/garment/orderly
@@ -847,13 +1007,19 @@
 
 /obj/item/storage/bag/garment/orderly/PopulateContents()
 	generate_items_inside(list(
-		/obj/item/radio/headset/headset_med = 2,
-		/obj/item/clothing/shoes/sneakers/white = 2,
-		/obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/orderly = 2,
-		/obj/item/clothing/head/helmet/blueshirt/skyrat/guard = 2,
-		/obj/item/clothing/head/beret/sec/medical = 2,
-		/obj/item/clothing/suit/armor/vest/blueshirt/skyrat/orderly = 2,
-		/obj/item/clothing/glasses/hud/security = 2,
+		/obj/item/radio/headset/guard_bowman/medical = 1,
+		/obj/item/clothing/shoes/sneakers/white = 1,
+		/obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/orderly = 1,
+		/obj/item/clothing/head/helmet/blueshirt/skyrat/guard = 1,
+		/obj/item/clothing/head/beret/sec/medical = 1,
+		/obj/item/clothing/suit/armor/vest/blueshirt/skyrat/orderly = 1,
+		/obj/item/clothing/suit/toggle/labcoat/skyrat/security_medic = 1,
+		/obj/item/clothing/suit/toggle/labcoat/technical/medical/guard = 1,
+		/obj/item/clothing/suit/toggle/labcoat/technical/medical/dark/guard = 1,
+		/obj/item/clothing/suit/toggle/labcoat/technical/medical/black/guard = 1,
+		/obj/item/clothing/under/rank/security/peacekeeper/miniskirt = 1,
+		/obj/item/clothing/glasses/hud/medsechud = 1,
+		/obj/item/clothing/glasses/hud/security/sunglasses/guard/medical = 1,
 	), src)
 
 /obj/item/storage/bag/garment/engineering_guard
@@ -862,13 +1028,15 @@
 
 /obj/item/storage/bag/garment/engineering_guard/PopulateContents()
 	generate_items_inside(list(
-		/obj/item/radio/headset/headset_eng = 2,
+		/obj/item/radio/headset/guard_bowman/engineering = 2,
 		/obj/item/clothing/shoes/workboots = 2,
 		/obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/engineering_guard = 2,
 		/obj/item/clothing/head/helmet/blueshirt/skyrat/guard = 2,
 		/obj/item/clothing/head/beret/sec/engineering = 2,
 		/obj/item/clothing/suit/armor/vest/blueshirt/skyrat/engineering_guard = 2,
-		/obj/item/clothing/glasses/hud/security = 2,
+		/obj/item/clothing/suit/toggle/labcoat/technical/engineer/guard = 1,
+		/obj/item/clothing/glasses/hud/security = 1,
+		/obj/item/clothing/glasses/hud/security/sunglasses/guard/engineering = 1,
 	), src)
 
 /obj/item/storage/bag/garment/customs_agent
@@ -877,12 +1045,13 @@
 
 /obj/item/storage/bag/garment/customs_agent/PopulateContents()
 	generate_items_inside(list(
-		/obj/item/radio/headset/headset_cargo = 2,
+		/obj/item/radio/headset/guard_bowman/cargo = 2,
 		/obj/item/clothing/shoes/sneakers/black = 2,
 		/obj/item/clothing/under/rank/security/officer/blueshirt/skyrat/customs_agent = 2,
 		/obj/item/clothing/head/helmet/blueshirt/skyrat/guard = 2,
 		/obj/item/clothing/head/beret/sec/cargo = 2,
 		/obj/item/clothing/suit/armor/vest/blueshirt/skyrat/customs_agent = 2,
-		/obj/item/clothing/glasses/hud/security = 2,
-		/obj/item/clothing/glasses/hud/gun_permit = 2,
+		/obj/item/clothing/suit/toggle/labcoat/technical/cargo/guard = 1,
+		/obj/item/clothing/glasses/hud/security = 1,
+		/obj/item/clothing/glasses/hud/security/sunglasses/guard/customs = 1,
 	), src)

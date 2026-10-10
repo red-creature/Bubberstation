@@ -160,7 +160,7 @@
 /mob/living/simple_animal/hostile/megafauna/colossus/proc/enrage(mob/living/victim)
 	if(!ishuman(victim))
 		return FALSE
-	if(isgolem(victim) && victim.has_status_effect(/datum/status_effect/golem/gold))
+	if(victim.has_status_effect(/datum/status_effect/golem/gold))
 		return TRUE
 
 	return istype(GET_ACTIVE_MARTIAL_ART(victim), /datum/martial_art/the_sleeping_carp)
@@ -209,6 +209,10 @@
 	if(isliving(target))
 		var/mob/living/dust_mob = target
 // BUBBER EDIT START - Guts the fucker instead of dusting them
+		var/mob/dead/observer/ghost = dust_mob.get_ghost(TRUE, TRUE)
+		if(!(ghost?.can_reenter_corpse && ghost?.client) && !dust_mob.client)
+			dust_mob.dust()
+			return
 		if(dust_mob.stat == DEAD && !dust_mob.has_status_effect(/datum/status_effect/gutted))
 			if(iscarbon(dust_mob))
 				qdel(dust_mob.get_organ_slot(ORGAN_SLOT_LUNGS))

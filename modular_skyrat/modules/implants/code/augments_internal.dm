@@ -10,13 +10,15 @@
 		return
 
 	var/mob/living/carbon/human/human_owner = owner
-	if(human_owner.stat != UNCONSCIOUS)
+	if(!IS_UNCONSCIOUS_OR_CRIT(human_owner))
+
 		return
 
 	human_owner.AdjustUnconscious(-50 * seconds_per_tick, FALSE)
 	human_owner.AdjustSleeping(-50 * seconds_per_tick, FALSE)
 	to_chat(owner, span_notice("You feel a rush of energy course through your body!"))
 	cooldown = addtimer(CALLBACK(src, PROC_REF(sleepytimerend)), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_STOPPABLE | TIMER_DELETE_ME)
+	. = ..()
 
 /obj/item/organ/cyberimp/brain/anti_sleep/proc/sleepytimerend()
 	to_chat(owner, span_notice("You hear a small beep in your head as your CNS Jumpstarter finishes recharging."))

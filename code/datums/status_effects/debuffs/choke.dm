@@ -163,7 +163,7 @@
 /datum/status_effect/choke/proc/attempt_eat(mob/source, atom/eating)
 	SIGNAL_HANDLER
 	source.balloon_alert(source, "can't get it down!")
-	return COMSIG_CARBON_BLOCK_EAT
+	return BLOCK_EAT_ATTEMPT
 
 /datum/status_effect/choke/proc/helped(mob/source, mob/helping)
 	SIGNAL_HANDLER
@@ -238,7 +238,7 @@
 
 	if(iscarbon(victim))
 		var/mob/living/carbon/carbon_victim = victim
-		if(!carbon_victim.appears_alive())
+		if(IS_DEAD_OR_FAKING(carbon_victim))
 			victim.balloon_alert(aggressor, "too late...")
 			return FALSE
 

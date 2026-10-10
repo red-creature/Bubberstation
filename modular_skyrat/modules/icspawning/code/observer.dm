@@ -4,7 +4,7 @@
 	quickicspawn(target, src)
 
 /mob/dead/observer/proc/quickicspawn(mob/target, mob/user)
-	if(!isobserver(target) || !check_rights(R_SPAWN))
+	if(!isobserver(target) || !check_rights(R_SPAWN, FALSE))
 		return
 
 	/// Whether to spawn in with sparks or in a pod
@@ -23,7 +23,8 @@
 	var/outfit_option
 	/// Initial list of outfits
 	var/list/outfit_options = list(
-		"Bluespace Tech" = /datum/outfit/admin/bst,
+		"Bluespace Tech (Admin)" = /datum/outfit/admin/bst,
+		"Bluespace Tech (Admin) (MODSuit)" = /datum/outfit/admin/bst/mod,
 		"Naked" = /datum/outfit,
 		"Show All" = "Show All",
 	)
@@ -54,7 +55,7 @@
 		return
 
 	outfit_option = tgui_input_list(user, "Which outfit to use?", "IC Quick Spawn", outfit_options)
-	if(outfit_option == outfit_options[3])
+	if(outfit_option == outfit_options[4])
 		outfit_option = user.client.robust_dress_shop_skyrat()
 	else
 		outfit_option = outfit_options[outfit_option]
@@ -103,11 +104,8 @@
 
 	if(teleport_option == teleport_options[1])
 		new_player.forceMove(current_turf)
+		do_sparks(10, TRUE, new_player, spark_type = /datum/effect_system/basic/spark_spread/quantum)
 		playsound(new_player, 'sound/effects/magic/Disable_Tech.ogg', 100, FALSE)
-		var/datum/effect_system/spark_spread/quantum/sparks = new
-		sparks.set_up(10, 1, new_player)
-		sparks.attach(get_turf(new_player))
-		sparks.start()
 	else if(teleport_option == teleport_options[2])
 		var/obj/structure/closet/supplypod/podspawn/empty_pod = new(null, pod_style)
 		new_player.forceMove(empty_pod)

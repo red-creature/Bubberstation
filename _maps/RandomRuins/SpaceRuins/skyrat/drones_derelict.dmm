@@ -764,7 +764,7 @@
 /obj/structure/table,
 /obj/item/tank/internals/oxygen/empty,
 /obj/item/tank/internals/oxygen/empty,
-/obj/item/computer_disk/engineering,
+/obj/item/disk/computer/engineering,
 /turf/open/floor/iron/airless,
 /area/ruin/space/bb13/engineering/engine)
 "mj" = (
@@ -969,7 +969,7 @@
 	pixel_x = 6;
 	pixel_y = 6
 	},
-/obj/item/ai_module/core/full/drone,
+/obj/item/ai_module/law/core/full/drone,
 /turf/open/floor/circuit/red/airless,
 /area/ruin/space/bb13/engineering/sec_eng)
 "pS" = (

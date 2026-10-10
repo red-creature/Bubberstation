@@ -10,8 +10,9 @@
 	obj_flags = CONDUCTS_ELECTRICITY
 	resistance_flags = FIRE_PROOF
 	custom_materials = list(
-		/datum/material/alloy/plasteel = SHEET_MATERIAL_AMOUNT*5,
-		/datum/material/titanium = SHEET_MATERIAL_AMOUNT*3,
+		/datum/material/alloy/plasteel = SHEET_MATERIAL_AMOUNT * 8,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 4,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
 	)
 	material_flags = MATERIAL_EFFECTS
 	/// The lock code transferred from the structure
@@ -197,3 +198,4 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/secure_safe, 32)
 
 /obj/structure/secure_safe/caps_spare/rust_heretic_act()
 	take_damage(damage_amount = 100, damage_type = BRUTE, damage_flag = MELEE, armour_penetration = 100)
+	return TRUE

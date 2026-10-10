@@ -316,7 +316,7 @@
 /// Send a message to everyone on the Z level with directions to the lectern
 /obj/structure/destructible/clockwork/gear_base/technologists_lectern/proc/send_message(initial_message = "You hear the echoing of cogs ", volume = 70)
 	for(var/mob/living/living_mob as anything in GLOB.mob_living_list)
-		if((living_mob.z != z) || IS_CLOCK(living_mob) || !living_mob.can_hear())
+		if((living_mob.z != z) || IS_CLOCK(living_mob) || !HAS_TRAIT(living_mob, TRAIT_DEAF))
 			continue
 
 
@@ -375,7 +375,7 @@
 
 /// Called after research completes, making one of a few bad things happen to the station
 /obj/structure/destructible/clockwork/gear_base/technologists_lectern/proc/side_effect(force_rand)
-	var/side_effect_num = force_rand || rand(1, 40)
+	var/side_effect_num = force_rand || rand(1, 30)
 
 	switch(side_effect_num)
 		if(1 to 10) // Cult-ify everything nearby
@@ -418,9 +418,7 @@
 				var/turf/tile = get_step(src, direction)
 				new /mob/living/basic/clockwork_marauder(tile)
 
-				var/datum/effect_system/fluid_spread/smoke/smoke_cloud = new
-				smoke_cloud.set_up(4, holder = src, location = src)
-				smoke_cloud.start()
+				do_smoke(4, holder = src, location = src)
 
 		if(21 to 30) // Fuck up the power
 			priority_announce("A fatal power outage has occurred. Please ensure that all on-board devices are connected to an appropriate power generator.")
@@ -450,14 +448,6 @@
 					to_chat(living_mob, span_brass("You feel as if something powerful is watching over you, as you feel the power in your Clockwork Slab increase."))
 				else
 					to_chat(living_mob, span_brass("You feel as if something powerful is watching over you as a low hum of machinery fills your mind."))
-
-
-		if(31 to 40) // Fuck up the power, but in the other way instead
-			priority_announce("An extreme power surge has been detected in on-board APCs. Surge will subside in [rand(3, 8)] minutes.") // Not always accurate, are we?
-
-			force_apc_arcing(TRUE)
-			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(force_apc_arcing), FALSE), 4 MINUTES)
-
 
 /obj/effect/lectern_light
 	icon = 'modular_skyrat/modules/clock_cult/icons/clockwork_objects.dmi'

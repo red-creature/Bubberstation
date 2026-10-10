@@ -207,7 +207,7 @@
 /datum/sprite_accessory/taur/synthliz/biglegs
 	name = "Synthetic Big Legs"
 	icon_state = "biglegs"
-	taur_mode = STYLE_TAUR_PAW
+	taur_mode = STYLE_TAUR_BIG
 	organ_type = /obj/item/organ/taur_body/anthro/synth
 
 /datum/sprite_accessory/taur/synthliz/biglegs/stanced
@@ -231,3 +231,12 @@
 	name = "Synthetic Big Legs, Stanced Pegs"
 	icon_state = "biglegs_peg_stanced"
 	icon = 'modular_zubbers/icons/customization/taur.dmi'
+
+/datum/sprite_accessory/taur/synthliz/horse
+	name = "Robotic Horse"
+	icon_state = "robohorse"
+	icon = 'modular_zubbers/icons/customization/taur.dmi'
+	taur_mode = STYLE_TAUR_HOOF
+	alt_taur_mode = STYLE_TAUR_PAW
+	can_lay_down = TRUE
+	laydown_offset = -3

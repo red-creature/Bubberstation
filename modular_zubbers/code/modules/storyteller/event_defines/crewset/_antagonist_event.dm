@@ -2,36 +2,6 @@
 	reoccurence_penalty_multiplier = 0
 	track = EVENT_TRACK_CREWSET
 	alert_observers = FALSE
-	/// Protected roles from the antag roll. People will not get those roles if a config is enabled
-	var/protected_roles = list(
-		JOB_CAPTAIN,
-		JOB_BLUESHIELD,
-		JOB_BRIDGE_ASSISTANT,
-
-		// Heads of staff
-		JOB_HEAD_OF_PERSONNEL,
-		JOB_HEAD_OF_SECURITY,
-		JOB_CHIEF_ENGINEER,
-		JOB_CHIEF_MEDICAL_OFFICER,
-		JOB_RESEARCH_DIRECTOR,
-		JOB_QUARTERMASTER,
-		JOB_NT_REP,
-
-		// Seccies
-		JOB_DETECTIVE,
-		JOB_SECURITY_OFFICER,
-		JOB_WARDEN,
-		JOB_CORRECTIONS_OFFICER,
-		JOB_PRISONER,
-		JOB_SECURITY_MEDIC,
-
-		// Department Guards-Additional
-		JOB_BOUNCER,
-		JOB_ORDERLY,
-		JOB_CUSTOMS_AGENT,
-		JOB_ENGINEERING_GUARD,
-		JOB_SCIENCE_GUARD,
-		)
 
 	/// Restricted roles from the antag roll
 	var/restricted_roles = list(JOB_AI, JOB_CYBORG)
@@ -57,19 +27,32 @@
 /datum/round_event_control/antagonist/New()
 	. = ..()
 	if(CONFIG_GET(flag/protect_roles_from_antagonist))
-		restricted_roles |= protected_roles
+		restricted_roles |= get_config_blacklisted_roles()
 	restricted_roles |= SSstation.antag_restricted_roles
 	restricted_roles |= SSstation.antag_protected_roles
 	if(CONFIG_GET(flag/protect_assistant_from_antagonist))
 		restricted_roles |= JOB_ASSISTANT
-	for(var/datum/job/iterating_job as anything in subtypesof(/datum/job))
-		if(initial(iterating_job.restricted_antagonists))
-			restricted_roles |= initial(iterating_job.title)
+
+/datum/round_event_control/antagonist/proc/get_config_blacklisted_roles()
+	SHOULD_NOT_OVERRIDE(TRUE)
+	var/list/blacklist = list()
+	for(var/datum/job/job as anything in SSjob.all_occupations)
+		var/is_protected = (job.job_flags & JOB_ANTAG_PROTECTED)
+		var/is_blacklisted = (job.job_flags & JOB_ANTAG_BLACKLISTED)
+		if(is_blacklisted || (CONFIG_GET(flag/protect_roles_from_antagonist) && is_protected))
+			blacklist |= job.title
+	if(CONFIG_GET(flag/protect_assistant_from_antagonist))
+		restricted_roles |= JOB_ASSISTANT
+	return blacklist
 
 /datum/round_event_control/antagonist/can_spawn_event(players_amt, allow_magic = FALSE, popchecks = TRUE)
 	. = ..()
 	if(!.)
 		return
+	var/crew_antag_time_maximum = CONFIG_GET(number/disallow_crew_antags_time_threshold)
+	if(crew_antag_time_maximum >= 0)
+		if( (world.time-SSticker.round_start_time) >= (crew_antag_time_maximum MINUTES))
+			return FALSE
 	if(!roundstart && !SSgamemode.can_inject_antags())
 		return FALSE
 	if(!get_antag_amount())
@@ -83,6 +66,14 @@
 
 /datum/round_event_control/antagonist/proc/get_candidates()
 	var/round_started = SSticker.HasRoundStarted()
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_HEAD_ANTAG))
+		restricted_roles -= list(
+		JOB_HEAD_OF_PERSONNEL,
+		JOB_CHIEF_ENGINEER,
+		JOB_CHIEF_MEDICAL_OFFICER,
+		JOB_RESEARCH_DIRECTOR,
+		JOB_QUARTERMASTER,
+		)
 	var/list/candidates = SSgamemode.get_candidates(antag_flag, pick_roundstart_players = !round_started, restricted_roles = restricted_roles, restricted_species = restricted_species)
 	return candidates
 
@@ -160,6 +151,8 @@
 /datum/round_event/antagonist/solo/start()
 	for(var/datum/mind/antag_mind as anything in setup_minds)
 		add_datum_to_mind(antag_mind)
+		log_game("[antag_mind.current] was selected for antagonist role [antag_flag].")
+		message_admins(span_yellowteamradio("[ADMIN_LOOKUPFLW(antag_mind.current)] was selected for antagonist role [antag_flag]."))
 
 /datum/round_event/antagonist/proc/add_datum_to_mind(datum/mind/antag_mind)
 	antag_mind.add_antag_datum(antag_datum)
@@ -181,6 +174,8 @@
 /datum/round_event/antagonist/team/start()
 	for(var/datum/mind/antag_mind as anything in setup_minds)
 		add_datum_to_mind(antag_mind)
+		log_game("[antag_mind.current] was selected for antagonist role [antag_flag].")
+		message_admins(span_yellowteamradio("[ADMIN_LOOKUPFLW(antag_mind.current)] was selected for antagonist role [antag_flag]."))
 
 /datum/round_event/antagonist/team/load_vars(datum/round_event_control/antagonist/team/cast_control)
 	. = ..()

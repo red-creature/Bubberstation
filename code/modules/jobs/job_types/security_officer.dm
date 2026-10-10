@@ -3,10 +3,9 @@
 	description = "Protect company assets, follow the Standard Operating \
 		Procedure, eat donuts."
 	auto_deadmin_role_flags = DEADMIN_POSITION_SECURITY
-	department_head = list(JOB_HEAD_OF_SECURITY)
 	faction = FACTION_STATION
-	total_positions = 8 //Handled in /datum/controller/occupations/proc/setup_officer_positions() //SKYRAT EDIT: SET TO 8, WAS 5
-	spawn_positions = 8 //Handled in /datum/controller/occupations/proc/setup_officer_positions() //SKYRAT EDIT: SEE ABOVE
+	total_positions = 5 //Handled in /datum/controller/occupations/proc/setup_officer_positions()
+	spawn_positions = 5 //Handled in /datum/controller/occupations/proc/setup_officer_positions()
 	supervisors = "the Head of Security, and the head of your assigned department (if applicable)"
 	minimal_player_age = 7
 	exp_requirements = 300
@@ -20,7 +19,7 @@
 	paycheck = PAYCHECK_CREW
 	paycheck_department = ACCOUNT_SEC
 
-	mind_traits = list(SECURITY_MIND_TRAITS)
+	desensitized_base = DESENSITIZED_THRESHOLD
 	liver_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM)
 
 	display_order = JOB_DISPLAY_ORDER_SECURITY_OFFICER
@@ -29,7 +28,7 @@
 		/datum/job_department/security,
 		)
 
-	family_heirlooms = list(/obj/item/book/manual/wiki/security_space_law, /obj/item/clothing/head/beret/sec/peacekeeper) //SKYRAT EDIT ADD - /peacekeeper
+	family_heirlooms = list(/obj/item/book/manual/wiki/security_space_law, /obj/item/clothing/head/beret/sec)
 
 	mail_goodies = list(
 		/obj/item/food/donut/caramel = 10,
@@ -58,27 +57,25 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
  */
 GLOBAL_LIST_EMPTY(security_officer_distribution)
 
+/datum/job/security_officer/after_spawn(mob/living/spawned, client/player_client)
+	. = ..()
+	if(!prob(PIG_COP_PROBABILITY))
+		return
+	for (var/obj/item/bodypart/ham as anything in spawned.get_bodyparts())
+		ham.butcher_drops_override = list(/obj/item/food/meat/slab/pig = ham.base_meat_amount)
 
 /datum/job/security_officer/after_roundstart_spawn(mob/living/spawning, client/player_client)
 	. = ..()
-	//SKYRAT EDIT REMOVAL
-	/*
 	if(ishuman(spawning))
 		setup_department(spawning, player_client, move_to = TRUE)
-	*/
-	//SKYRAT EDIT END
 
 
 /datum/job/security_officer/after_latejoin_spawn(mob/living/spawning)
 	. = ..()
-	//SKYRAT EDIT REMOVAL
-	/*
 	if(ishuman(spawning))
 		var/department = setup_department(spawning, spawning.client)
 		if(department)
 			announce_latejoin(spawning, department, GLOB.security_officer_distribution)
-	*/
-	//SKYRAT EDIT END
 
 
 /// Returns the department this mob was assigned to, if any.
@@ -130,13 +127,33 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 	if(dep_trim)
 		var/obj/item/card/id/worn_id = spawning.get_idcard(hand_first = FALSE)
 		SSid_access.apply_trim_to_card(worn_id, dep_trim)
+
+		// BUBBER EDIT ADDITION BEGIN - ALTERNATE JOB TITLES
+		// gets their preferred alt title
+		var/chosen_title = player_client?.prefs?.alt_job_titles?[title] || title
+		var/display_assignment = chosen_title
+
+		// and adds the department
+		if(department)
+			display_assignment = "[chosen_title] ([department])"
+
+		worn_id.assignment = display_assignment
+		worn_id.update_label()
+
 		spawning.update_ID_card()
 
 		// Update PDA to match new trim.
 		var/obj/item/modular_computer/pda/pda = spawning.get_item_by_slot(ITEM_SLOT_BELT)
+		// BUBBER EDIT CHANGE BEGIN - ALTERNATE JOB TITLES
+		/*
 		var/assignment = worn_id.get_trim_assignment()
 		if(istype(pda) && !isnull(assignment))
 			pda.imprint_id(spawning.real_name, assignment)
+		*/
+		// we assign display_assignment earlier with their custom title, otherwise assignment is just 'security officer (department)'
+		if(istype(pda))
+			pda.imprint_id(spawning.real_name, display_assignment)
+		// BUBBER EDIT CHANGE END - ALTERNATE JOB TITLES
 
 	var/spawn_point = pick(LAZYACCESS(GLOB.department_security_spawns, department))
 
@@ -148,7 +165,7 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 			while (length(possible_turfs))
 				var/random_index = rand(1, length(possible_turfs))
 				var/turf/target = possible_turfs[random_index]
-				if (spawning.forceMove(target))
+				if (isopenturf(target) && spawning.forceMove(target))
 					break
 				possible_turfs.Cut(random_index, random_index + 1)
 
@@ -228,17 +245,15 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 	id_trim = /datum/id_trim/job/security_officer
 	uniform = /obj/item/clothing/under/rank/security/officer
 	suit = /obj/item/clothing/suit/armor/vest/alt/sec
-	suit_store = /obj/item/gun/energy/e_gun/advtaser //BUBBER EDIT CHANGE - Original: /obj/item/gun/energy/disabler
+	suit_store = /obj/item/gun/energy/disabler
 	backpack_contents = list(
 		/obj/item/evidencebag = 1,
-		/obj/item/flashlight/seclite = 1, // BUBBER EDIT ADDITION
 		)
 	belt = /obj/item/modular_computer/pda/security
 	ears = /obj/item/radio/headset/headset_sec/alt
 	gloves = /obj/item/clothing/gloves/color/black/security
-	head = /obj/item/clothing/head/security_garrison //SKYRAT EDIT CHANGE - Original: /obj/item/clothing/head/helmet/sec
+	head = /obj/item/clothing/head/helmet/sec
 	shoes = /obj/item/clothing/shoes/jackboots/sec
-	glasses = /obj/item/clothing/glasses/hud/security //SKYRAT EDIT - ADDITION
 	l_pocket = /obj/item/restraints/handcuffs
 	r_pocket = /obj/item/assembly/flash/handheld
 
@@ -256,6 +271,8 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 		//The helmet is necessary because /obj/item/clothing/head/helmet/sec is overwritten in the chameleon list by the standard helmet, which has the same name and icon state
 	implants = list(/obj/item/implant/mindshield)
 
+	wintercoat = /obj/item/clothing/suit/hooded/wintercoat/security
+
 /datum/outfit/job/security/mod
 	name = "Security Officer (MODsuit)"
 
@@ -269,8 +286,6 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 /obj/item/radio/headset/headset_sec/alt/department/Initialize(mapload)
 	. = ..()
 	set_wires(new/datum/wires/radio(src))
-	secure_radio_connections = list()
-	recalculateChannels()
 
 /obj/item/radio/headset/headset_sec/alt/department/engi
 	keyslot = /obj/item/encryptionkey/headset_sec
@@ -299,7 +314,7 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 	 * This is the function that is responsible for taking the list of preferences,
 	 * and spitting out what to put them in.
 	 *
-	 * However, it should, wherever possible, prevent solo departments.
+	 * However, it should, wherever possible, prevent solo departments. // BUBBER EDIT: This was patched out, allowing solo departments
 	 * That means that if there's one medical officer, and one engineering officer,
 	 * that they should be put onto the same department (either medical or engineering).
 	 *
@@ -442,6 +457,8 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 	return selection
 
 /proc/get_distribution(candidates, departments)
+	// BUBBER EDIT BEGIN - REMOVES THE PAIRING CODE.
+	/*
 	var/number_of_twos = min(departments, round(candidates / 2))
 	var/redistribute = candidates - (2 * number_of_twos)
 
@@ -450,10 +467,18 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 	for (var/index in 1 to number_of_twos)
 		distribution[index] = 2
 
+	*/
+	var/distribution_size = min(departments, candidates)
+	var/redistribute = candidates - distribution_size
+	var/distribution[max(1, distribution_size)]
+	for (var/index in 1 to distribution_size)
+		distribution[index] = 1
+
 	for (var/index in 0 to redistribute - 1)
 		distribution[(index % departments) + 1] += 1
 
 	return distribution
+	// BUBBER EDIT END
 
 /proc/get_new_officer_distribution_from_late_join(
 	preference,
@@ -495,9 +520,13 @@ GLOBAL_LIST_EMPTY(security_officer_distribution)
 	for (var/department in amount_in_departments)
 		var/amount = amount_in_departments[department]
 
+		// BUBBER EDIT BEGIN - REMOVES THE PAIRING CODE.
+		/*
 		if (amount == 1)
 			return department
-		else if (lowest_amount > amount)
+		else*/
+		if (lowest_amount > amount)
+		// BUBBER EDIT END
 			lowest_departments = list(department)
 			lowest_amount = amount
 		else if (lowest_amount == amount)

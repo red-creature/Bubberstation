@@ -211,6 +211,7 @@
 	armour_penetration = 10
 	embed_data = /datum/embedding/stake/hardened
 	staketime = 12 SECONDS
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT)
 
 /obj/item/stake/hardened/examine_more(mob/user)
 	. = ..()
@@ -228,7 +229,7 @@
 	siemens_coefficient = 1
 	force = 9
 	armour_penetration = 25
-	custom_materials = list(/datum/material/silver = SHEET_MATERIAL_AMOUNT)
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT, /datum/material/silver = SHEET_MATERIAL_AMOUNT)
 	embed_data = /datum/embedding/stake/silver
 	staketime = 15 SECONDS
 
@@ -295,7 +296,7 @@
 		return
 	user.balloon_alert_to_viewers(user, "reading book...")
 	user.balloon_alert(target, "looks at you and checks their [src]...")
-	if(!do_after(user, 3 SECONDS, target, timed_action_flags = NONE, progress = TRUE))
+	if(!do_after(user, 3 SECONDS, target, timed_action_flags = NONE, show_progress = TRUE))
 		to_chat(user, span_notice("You quickly close [src]."))
 		return
 	COOLDOWN_START(src, bloodsucker_check_cooldown, cooldown_time)

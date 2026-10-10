@@ -24,14 +24,12 @@
 #define BLOCKS_CONSTRUCTION_DIR (1<<10)
 /// Can we ignore density when building on this object (for example, directional windows and grilles)
 #define IGNORE_DENSITY (1<<11)
-/// We can reskin this item infinitely
-#define INFINITE_RESKIN (1<<12)
 /// Can this object conduct electricity
-#define CONDUCTS_ELECTRICITY (1<<13)
+#define CONDUCTS_ELECTRICITY (1<<12)
 /// Atoms don't spawn anything when deconstructed (they just vanish)
-#define NO_DEBRIS_AFTER_DECONSTRUCTION (1<<14)
+#define NO_DEBRIS_AFTER_DECONSTRUCTION (1<<13)
 /// Flag which tells an object to hang onto an support atom on late initialize. Usefull only during mapload and supported by some atoms only
-#define MOUNT_ON_LATE_INITIALIZE (1<<15)
+#define MOUNT_ON_LATE_INITIALIZE (1<<14)
 
 // If you add new ones, be sure to add them to /obj/Initialize as well for complete mapping support
 
@@ -70,6 +68,8 @@
 #define SKIP_FANTASY_ON_SPAWN (1<<20)
 /// If an item has had its /datum/element/weapon_description initialized or not.
 #define WEAPON_DESCRIPTION_INITIALIZED (1<<21)
+/// If an item causes bluespace interference when teleported with.
+#define BLUESPACE_INTERFERENCE (1<<22)
 
 // Flags for the clothing_flags var on /obj/item/clothing
 
@@ -103,18 +103,16 @@
 #define STACKABLE_HELMET_EXEMPT (1<<12)
 /// Prevents plasmamen from igniting when wearing this
 #define PLASMAMAN_PREVENT_IGNITION (1<<13)
-/// Usable as casting clothes by wizards (matters for suits, glasses and headwear)
-#define CASTING_CLOTHES (1<<14)
 ///Moths can't eat the clothing that has this flag.
-#define INEDIBLE_CLOTHING (1<<15)
+#define INEDIBLE_CLOTHING (1<<14)
 /// Headgear/helmet allows internals
-#define HEADINTERNALS (1<<16)
+#define HEADINTERNALS (1<<15)
 /// Prevents masks from getting adjusted from enabling internals
-#define INTERNALS_ADJUST_EXEMPT (1<<17)
+#define INTERNALS_ADJUST_EXEMPT (1<<16)
 /// Indicates that the piece of clothing contributes towards Sleeping Carp's style factor, which determines evasion probabilities. See /datums/martial/sleeping_carp/carp_style_check().
-#define CARP_STYLE_FACTOR (1<<18)
+#define CARP_STYLE_FACTOR (1<<17)
 /// Prevents clothing from losing bodyparts coverage when shredded
-#define NO_ZONE_DISABLING (1<<19)
+#define NO_ZONE_DISABLING (1<<18)
 
 /// Integrity defines for clothing (not flags but close enough)
 #define CLOTHING_PRISTINE 0 // We have no damage on the clothing

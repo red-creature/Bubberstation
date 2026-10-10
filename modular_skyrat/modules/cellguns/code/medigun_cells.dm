@@ -461,7 +461,7 @@
 	if(HAS_TRAIT(target, TRAIT_FLOORED) || target.resting) //Is the person already on the floor to begin with? Mostly a measure to prevent spamming.
 		var /obj/structure/bed/medical/medigun/created_bed = new /obj/structure/bed/medical/medigun(target.loc)
 
-		if(!target.stat == CONSCIOUS)
+		if(!IS_UNCONSCIOUS_OR_CRIT(target))
 			created_bed.buckle_mob(target)
 		return TRUE
 	else
@@ -491,9 +491,7 @@
 	body.visible_message(span_notice("[body]'s body teleports to [firer]!"))
 
 /obj/projectile/energy/medical/utility/body_teleporter/proc/teleport_effect(location)
-	var/datum/effect_system/spark_spread/quantum/sparks = new /datum/effect_system/spark_spread/quantum //uses the teleport effect from quantum pads
-	sparks.set_up(5, 1, get_turf(location))
-	sparks.start()
+	do_sparks(5, 1, get_turf(location))
 
 //Objects Used by medicells.
 /obj/item/clothing/suit/toggle/labcoat/hospitalgown/hardlight
@@ -676,7 +674,7 @@
 	if(area_locked && length(teleport_areas) && !is_type_in_list(get_area(teleportee), teleport_areas))
 		return ..()
 
-	if(!teleportee.stat == CONSCIOUS) // This is mostly here to stop medical from accidentally teleporting out people they otherwise wouldn't want to.
+	if(IS_UNCONSCIOUS_OR_CRIT(teleportee)) // This is mostly here to stop medical from accidentally teleporting out people they otherwise wouldn't want to.
 		return ..()
 
 	var/list/turf_list
