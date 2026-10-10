@@ -161,8 +161,8 @@ Due to some fuckery with how these templates work; the bottom left turf of your 
 /datum/map_template/condo/mountainside_dragonlair
 	name = "Condo - Dragon's Lair"
 	mappath = "modular_zubbers/code/modules/condos/_maps/apartment_dragonslair.dmm"
-	landing_zone_x_offset = 5
-	landing_zone_y_offset = 11
+	landing_zone_x_offset = 10
+	landing_zone_y_offset = 2
 
 /datum/map_template/condo/deepspace_ship
 	name = "Condo - Deepspace Ship"
